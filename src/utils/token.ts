@@ -4,17 +4,10 @@ import jwt from "jsonwebtoken";
 interface UpdatedUser {
     _id?: string;
     phone_number?:string;
-    type?: string;
-    fname?: string;
-    googleId?: string;
-    role?: string;
-    picture?: string;
-    auth?: any;
   }
   
   type Request = {
     user: UpdatedUser;
-    type: any;
   };
 
 export default function (req: Request, res: any, updatedUser: UpdatedUser) {
@@ -22,6 +15,7 @@ export default function (req: Request, res: any, updatedUser: UpdatedUser) {
       _id: updatedUser._id,
       phoneNumber:updatedUser.phone_number
     };
+  console.log("updated user", updatedUser);
   
     // // Check if the mobile/email field exists in updatedUser and add it to jwtSignValue if true
     // const mobileAuth: any = updatedUser.auth.find((auth: any) => auth.type === "mobile");
