@@ -14,7 +14,7 @@ export const register = async (req:any, res:any) => {
 
     delete authBody.password;
 
-    const createUser = await User.create({username, ...password, ...authBody});
+    const createUser = await User.create({username, ...password, phone_number:authBody.phoneNumber, ...authBody});
 
     if (!createUser) {
         return res.status(500).json({error:"unable to register user please try again later"});
