@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema(
   {
+    user:{
+      type:mongoose.Types.ObjectId,
+      ref:"User"
+    },
     title: {
       type: String,
       required: true,
@@ -13,6 +17,10 @@ const taskSchema = new mongoose.Schema(
     due_date: {
       type: Date,
       default: Date.now,
+    },
+    priority:{
+      type: Number,
+      enum: [0, 1, 2, 3]
     },
     task_id:{
       unique:true,
