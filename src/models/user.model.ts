@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
   },
   phone_number: {
-    type: Number, 
+    type: String, 
   },
   priority: {
     type: Number,
