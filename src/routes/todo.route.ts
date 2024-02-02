@@ -7,7 +7,8 @@ import {
   updateTaskById,
   updateSubTaskById,
   deleteTask,
-  deleteSubTask
+  deleteSubTask,
+  twilioCallBack
 } from "../controller/todo.controller";
 import {
   validateCreate,
@@ -21,6 +22,7 @@ router.post("/task", validateCreate, addTask);
 router.post("/sub-task", validateCreateSubTask, addSubTask);
 router.get("/task",getAllTasks);
 router.get("/sub-task",getAllSubTasks);
+router.post("/events", twilioCallBack)
 router.get("/sub-task/:id",getAllSubTasks);
 router.get("/task/:id",getAllTasks);
 router.put("/task/:id",updateTaskById);
