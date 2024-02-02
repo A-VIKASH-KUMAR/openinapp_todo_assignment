@@ -1,6 +1,6 @@
 import Task from "../models/task.model";
 import Subtask from "../models/subtask.model";
-import mongoose from "mongoose";
+import User from "../models/user.model";
 import { priorityNumber } from "../utils/cron";
 type Reqtask = {
   body: any;
@@ -17,13 +17,13 @@ function random(min: number, max: number) {
 export const addTask = async (req: Reqtask, res: any) => {
   const { title, description, dueDate } = req.body;
   const userId = req.user._id;
-  console.log("user id", userId);
 
   const priorityNum = priorityNumber(dueDate);
   const taskpost = await Task.findOne({ title, deleted: false });
   if (taskpost) {
-    res.status(409).json({ error: "task already exists", data: taskpost });
-    return;
+    return res
+      .status(409)
+      .json({ error: "task already exists", data: taskpost });
   }
   const taskId = random(10000, 20000);
   const createTask = await Task.create({
@@ -36,10 +36,14 @@ export const addTask = async (req: Reqtask, res: any) => {
   });
 
   if (!createTask) {
-    res.status(500).json({ error: "could not create task" });
-    return;
+    return res.status(500).json({ error: "could not create task" });
   }
-  await res.status(200).json({ data: createTask });
+  const userUpdate = await User.findOneAndUpdate(
+    { _id: userId },
+    { $push: { tasks: taskId } },
+    { new: true }
+  );
+  await res.status(200).json({ data: { createTask, userUpdate } });
 };
 
 // Controller to add sub task
@@ -80,18 +84,17 @@ export const getAllTasks = async (req: Reqtask, res: any) => {
   const taskId = req.params.id;
   const query: any = { user: userId };
   const { priority, due_date } = req.query;
-  console.log("params", req.query);
-//   logic to handle taskid, priority, due date filter
+
+  //   logic to handle taskid, priority, due date filter
   if (taskId) query.task_id = taskId;
   if (priority) query.priority = priority;
   if (due_date) query.due_date = { $lte: new Date(due_date) };
-  console.log("query", query);
 
-  const blogposts = await Task.find(query);
-  if (!blogposts) {
-    res.status(500).json({ error: "Error occoured to get all blog posts" });
+  const tasks = await Task.find(query);
+  if (!tasks) {
+    res.status(500).json({ error: "Error occoured to get all tasks" });
   }
-  await res.status(200).json({ data: blogposts });
+  await res.status(200).json({ data: tasks });
 };
 
 export const getAllSubTasks = async (req: Reqtask, res: any) => {
@@ -103,11 +106,12 @@ export const getAllSubTasks = async (req: Reqtask, res: any) => {
   //  logic to handle status or due date filter
   if (status) query.status = status;
   if (due_date) query.due_date = { $lte: new Date(due_date) };
-  console.log("query", query);
-  
+
   const blogposts = await Subtask.find(query);
   if (!blogposts) {
-    return res.status(500).json({ error: "Error occoured to get all subtasks" });
+    return res
+      .status(500)
+      .json({ error: "Error occoured to get all subtasks" });
   }
   return await res.status(200).json({ data: blogposts });
 };
@@ -115,60 +119,95 @@ export const getAllSubTasks = async (req: Reqtask, res: any) => {
 // update task by id
 export const updateTaskById = async (req: Reqtask, res: any) => {
   const taskId = req.params.id;
-  const { due_date, status } = req.body;
-  const task = await Task.findOneAndUpdate(
-    {task_id:taskId},
+  let { due_date, status } = req.body;
+  const task: any = await Task.findOneAndUpdate(
+    { task_id: taskId },
     { due_date, status },
     { new: true }
   );
   if (!task) {
     res.status(404).json({ error: "could not find task" });
   }
-  await res.status(200).json({ data: task });
+  //   update status to number
+  if (status === "DONE") status = 1;
+  else {
+    status = 0;
+  }
+
+  const subtasks = task.subtasks;
+  let updatedSubtasks = [];
+  for (let i = 0; i < subtasks.length; i++) {
+    const subTaskId = subtasks[i];
+    const subtask = await Subtask.findOneAndUpdate(
+      { id: subTaskId },
+      { status },
+      { new: true }
+    );
+    updatedSubtasks.push(subtask);
+  }
+
+  await res.status(200).json({ data: { task, updatedSubtasks } });
 };
 
 // update sub task by id
 export const updateSubTaskById = async (req: Reqtask, res: any) => {
   const subTaskId = req.params.id;
   const { status } = req.body;
-  const task = await Subtask.findOneAndUpdate(
-    {id:subTaskId},
+  const subtask = await Subtask.findOneAndUpdate(
+    { id: subTaskId },
     { status },
     { new: true }
   );
-  if (!task) {
-    res.status(404).json({ error: "could not find blog post" });
+  if (!subtask) {
+    res.status(404).json({ error: "could not find sub task" });
   }
-  await res.status(200).json({ data: task });
+  await res.status(200).json({ data: subtask });
 };
 
 // delete task by updating deleted boolean to true
 export const deleteTask = async (req: Reqtask, res: any) => {
   const taskId = req.params.id;
   const task = await Task.findOneAndUpdate(
-    {task_id:taskId},
+    { task_id: taskId },
     { deleted: true, deleted_at: new Date() },
     { new: true }
   );
   if (!task) {
     res.status(404).json({ error: "could not find task" });
   }
-  await res.status(200).json({ data: task });
+  const subtasks: any = task?.subtasks;
+  let deletedSubtasks = [];
+  for (let i = 0; i < subtasks?.length!; i++) {
+    const subTaskId = subtasks[i];
+    const subtask = await Subtask.findOneAndUpdate(
+      { id: subTaskId },
+      { deleted: true, deleted_at: new Date() },
+      { new: true }
+    );
+    deletedSubtasks.push(subtask);
+  }
+
+  await res.status(200).json({ data: { task, deletedSubtasks } });
 };
 
 // delete task by updating deleted boolean to true
 export const deleteSubTask = async (req: Reqtask, res: any) => {
   const subTaskId = req.params.id;
-  
+
   const subtask = await Subtask.findOneAndUpdate(
-    {id:subTaskId},
+    { id: subTaskId },
     { deleted: true, deleted_at: new Date() },
     { new: true }
   );
-  console.log("sub task", subtask);
-  
+
   if (!subtask) {
     return res.status(404).json({ error: "could not find sub task" });
   }
   await res.status(200).json({ data: subtask });
+};
+
+export const twilioCallBack = async (req: any, res: any) => {
+  const callStatus = res.status;
+
+  return res.status(200).json({ message: "twilio call back recieved" });
 };
