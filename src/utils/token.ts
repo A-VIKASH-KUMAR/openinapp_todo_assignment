@@ -2,7 +2,7 @@ import { access } from "fs";
 import jwt from "jsonwebtoken";
 
 interface UpdatedUser {
-    _id?: string;
+    id?: string;
     phone_number?:string;
   }
   
@@ -12,7 +12,7 @@ interface UpdatedUser {
 
 export default function (req: Request, res: any, updatedUser: UpdatedUser) {
     let jwtSignValue: any = {
-      _id: updatedUser._id,
+      id: updatedUser.id,
       phoneNumber:updatedUser.phone_number
     };
   
