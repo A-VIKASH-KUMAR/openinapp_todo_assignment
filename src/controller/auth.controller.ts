@@ -1,11 +1,12 @@
 import User from "../models/user.model";
 import bcrypt from "bcryptjs";
 import addNewToken from "../utils/token";
-
+import {random} from "./todo.controller"
 // controller to register new user
 export const register = async (req:any, res:any) => {
     const { ...authBody } =  req.body;
     const { username ="" } = authBody;
+    const id = random(20000,30000);
     const userIfExists = await User.findOne({username})
     if (userIfExists) {
         return res.status(409).json({error:"user already exists", data:userIfExists});
@@ -15,7 +16,7 @@ export const register = async (req:any, res:any) => {
 
     delete authBody.password;
 
-    const createUser = await User.create({username, ...password, phone_number:authBody.phoneNumber, ...authBody});
+    const createUser = await User.create({id, username, ...password, phone_number:authBody.phoneNumber, ...authBody});
 
     if (!createUser) {
         return res.status(500).json({error:"unable to register user please try again later"});
