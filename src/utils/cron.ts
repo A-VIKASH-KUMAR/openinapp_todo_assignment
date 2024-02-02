@@ -55,42 +55,46 @@ export const nodeCron = async () => {
 };
 
 export const twilioCalls = async () => {
-  try {
-    const currentDate = new Date();
+    cron.schedule("0 12 * * *", async () => {
+        try {
+            const currentDate = new Date();
+        
+            // Find tasks with due dates that have passed
+            const overdueTasks:any = await Task.find({ due_date: { $lte: currentDate } });
+        
+            // Sort tasks by priority
+            overdueTasks.sort((a: any, b: any) => b.priority - a.priority);
+        
+            // Iterate over tasks and make voice calls
+            for (let i = 0; i < overdueTasks.length; i++) {
+              const user: any = await User.findOne(overdueTasks[i].user);
+              const phoneNumber: string = user?.phone_number ?? "";
+        
+              // Initialize Twilio client
+              const accountSid = process.env.TWILIO_ACCOUNT_SID;
+              const authToken = process.env.TWILIO_AUTH_TOKEN;
+              const twilioPhoneNumber: string = process.env.TWILIO_PHONE_NUMBER!;
+              const client = twilio(accountSid, authToken);
+              const voiceResponse = twilio.twiml.VoiceResponse;
+              const response = new voiceResponse();
+              // Make a Twilio voice call
+              await client.calls.create({
+                to: phoneNumber,
+                from: twilioPhoneNumber,
+                statusCallback: "http://localhost:3001/api/events",
+                statusCallbackMethod: "POST",
+                url: "https://twilio.com/openinapp_ankit/voice/",
+                method: "GET",
+              });
+              console.log(`Voice call made to ${phoneNumber} for task `);
+            }
+          
+            console.log("Voice calls made successfully");
+        
+          } catch (error) {
+            console.error("Error making voice calls:", error);
+          }
+    })
+  
 
-    // Find tasks with due dates that have passed
-    const overdueTasks = await Task.find({ due_date: { $lt: currentDate } });
-
-    // Sort tasks by priority
-    overdueTasks.sort((a: any, b: any) => b.priority - a.priority);
-
-    // Iterate over tasks and make voice calls
-    for (let i = 0; i < overdueTasks.length; i++) {
-      const user: any = await User.findById(overdueTasks[i]._id);
-      const phoneNumber: string = user?.phone_number ?? "";
-    // const phoneNumber = "+918179769540"
-
-      // Initialize Twilio client
-      const accountSid = process.env.TWILIO_ACCOUNT_SID;
-      const authToken = process.env.TWILIO_AUTH_TOKEN;
-      const twilioPhoneNumber: string = process.env.TWILIO_PHONE_NUMBER!;
-      const client = twilio(accountSid, authToken);
-      const voiceResponse = twilio.twiml.VoiceResponse;
-      const response = new voiceResponse();
-      // Make a Twilio voice call
-      await client.calls.create({
-        to: phoneNumber,
-        from: twilioPhoneNumber,
-        statusCallback: "http://localhost:3001/api/events",
-        statusCallbackMethod: "POST",
-        url: "https://twilio.com/openinapp_ankit/voice/",
-        method: "GET",
-      });
-      console.log(`Voice call made to ${phoneNumber} for task `);
-    }
-
-    console.log("Voice calls made successfully");
-  } catch (error) {
-    console.error("Error making voice calls:", error);
-  }
-};
+}
