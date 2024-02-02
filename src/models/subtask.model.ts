@@ -15,6 +15,10 @@ const subtaskSchema = new mongoose.Schema(
       unique: true,
       required: true,
     },
+    due_date: {
+      type: Date,
+      default: Date.now,
+    },
     status: {
       type: Number,
       enum: [0, 1], // 0- incomplete, 1- complete
