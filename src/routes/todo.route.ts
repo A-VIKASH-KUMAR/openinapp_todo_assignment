@@ -4,17 +4,14 @@ import {
   addSubTask,
   getAllTasks,
   getAllSubTasks,
-  //   getAllBlogPost,
-  //   getBlogPostById,
-  //   updateBlogPostById,
-  //   deleteBlogPost,
+  updateTaskById,
+  updateSubTaskById,
+  deleteTask,
+  deleteSubTask
 } from "../controller/todo.controller";
 import {
   validateCreate,
   validateCreateSubTask
-//   validateGetBlogById,
-//   validateUpdateBlogById,
-//   validateDeleteBlogById,
 } from "../middlewares/todo.validate";
 
 const router = express.Router();
@@ -23,8 +20,12 @@ const router = express.Router();
 router.post("/task", validateCreate, addTask);
 router.post("/sub-task", validateCreateSubTask, addSubTask);
 router.get("/task",getAllTasks);
-// router.get("/blog/:id", validateGetBlogById, getBlogPostById);
-// router.put("/blog/:id", validateUpdateBlogById, updateBlogPostById);
-// router.delete("/blog/:id", validateDeleteBlogById, deleteBlogPost);
+router.get("/sub-task",getAllSubTasks);
+router.get("/sub-task/:id",getAllSubTasks);
+router.get("/task/:id",getAllTasks);
+router.put("/task/:id",updateTaskById);
+router.put("/sub-task/:id",updateSubTaskById);
+router.delete("/task/:id",deleteTask);
+router.delete("/sub-task/:id",deleteSubTask);
 
 export default router;
