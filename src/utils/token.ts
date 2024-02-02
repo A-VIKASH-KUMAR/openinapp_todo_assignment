@@ -15,26 +15,6 @@ export default function (req: Request, res: any, updatedUser: UpdatedUser) {
       _id: updatedUser._id,
       phoneNumber:updatedUser.phone_number
     };
-  console.log("updated user", updatedUser);
-  
-    // // Check if the mobile/email field exists in updatedUser and add it to jwtSignValue if true
-    // const mobileAuth: any = updatedUser.auth.find((auth: any) => auth.type === "mobile");
-    // if (mobileAuth?.mobile) {
-    //   jwtSignValue.mobile = mobileAuth.mobile;
-    // }
-  
-    // const emailAuth = updatedUser.auth.find((auth: any) => auth.type === "email");
-  
-    // if (emailAuth?.email) {
-    //   jwtSignValue.email = emailAuth.email;
-    // }
-  
-    // const googleAuth = updatedUser.auth.find((auth: any) => auth.type === "google");
-  
-    // if (googleAuth?.googleId) {
-    //   jwtSignValue.googleId = googleAuth.googleId;
-    //   jwtSignValue.photo.url = googleAuth.picture;
-    // }
   
     let accessToken = jwt.sign(jwtSignValue, process.env.JWT_SECRET_KEY!, {
       expiresIn: "5m",
@@ -50,6 +30,5 @@ export default function (req: Request, res: any, updatedUser: UpdatedUser) {
     res.locals.refresh = refreshToken;
   
     req.user = jwtSignValue;
-    // return res.locals;
   }
   
