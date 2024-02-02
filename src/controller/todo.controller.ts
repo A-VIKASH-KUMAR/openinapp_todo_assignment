@@ -9,14 +9,14 @@ type Reqtask = {
   query: any;
 };
 
-function random(min: number, max: number) {
+export function random(min: number, max: number) {
   return Math.floor(Math.random() * (max - min) + min);
 }
 
 // controller to add task
 export const addTask = async (req: Reqtask, res: any) => {
   const { title, description, dueDate } = req.body;
-  const userId = req.user._id;
+  const userId = req.user.id;
 
   const priorityNum = priorityNumber(dueDate);
   const taskpost = await Task.findOne({ title, deleted: false });
@@ -39,7 +39,7 @@ export const addTask = async (req: Reqtask, res: any) => {
     return res.status(500).json({ error: "could not create task" });
   }
   const userUpdate = await User.findOneAndUpdate(
-    { _id: userId },
+    { id: userId },
     { $push: { tasks: taskId } },
     { new: true }
   );
@@ -49,7 +49,7 @@ export const addTask = async (req: Reqtask, res: any) => {
 // Controller to add sub task
 export const addSubTask = async (req: Reqtask, res: any) => {
   const { title, description, dueDate, taskId } = req.body;
-  const userId = req.user._id;
+  const userId = req.user.id;
   const subTaskId = random(100, 999);
   const taskpost: any = await Task.findOneAndUpdate(
     { task_id: parseInt(taskId), deleted: false },
@@ -80,7 +80,7 @@ export const addSubTask = async (req: Reqtask, res: any) => {
 };
 
 export const getAllTasks = async (req: Reqtask, res: any) => {
-  const userId = req.user._id;
+  const userId = req.user.id;
   const taskId = req.params.id;
   const query: any = { user: userId };
   const { priority, due_date } = req.query;
@@ -98,7 +98,7 @@ export const getAllTasks = async (req: Reqtask, res: any) => {
 };
 
 export const getAllSubTasks = async (req: Reqtask, res: any) => {
-  const userId = req.user._id;
+  const userId = req.user.id;
   const taskId = req.params.id ?? "";
   const { status, due_date } = req.query;
   const query: any = { user: userId, task_id: taskId };
@@ -126,7 +126,7 @@ export const updateTaskById = async (req: Reqtask, res: any) => {
     { new: true }
   );
   if (!task) {
-    res.status(404).json({ error: "could not find task" });
+    return res.status(404).json({ error: "could not find task" });
   }
   //   update status to number
   if (status === "DONE") status = 1;
@@ -146,7 +146,7 @@ export const updateTaskById = async (req: Reqtask, res: any) => {
     updatedSubtasks.push(subtask);
   }
 
-  await res.status(200).json({ data: { task, updatedSubtasks } });
+  return await res.status(200).json({ data: { task, updatedSubtasks } });
 };
 
 // update sub task by id
@@ -159,9 +159,9 @@ export const updateSubTaskById = async (req: Reqtask, res: any) => {
     { new: true }
   );
   if (!subtask) {
-    res.status(404).json({ error: "could not find sub task" });
+    return res.status(404).json({ error: "could not find sub task" });
   }
-  await res.status(200).json({ data: subtask });
+  return await res.status(200).json({ data: subtask });
 };
 
 // delete task by updating deleted boolean to true
