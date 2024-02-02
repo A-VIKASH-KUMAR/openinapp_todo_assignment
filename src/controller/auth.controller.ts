@@ -2,6 +2,7 @@ import User from "../models/user.model";
 import bcrypt from "bcryptjs";
 import addNewToken from "../utils/token";
 
+// controller to register new user
 export const register = async (req:any, res:any) => {
     const { ...authBody } =  req.body;
     const { username ="" } = authBody;
