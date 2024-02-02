@@ -3,7 +3,8 @@ import todoRoute from "./routes/todo.route";
 import authRoute from "./routes/auth.route"
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
-// import cors from "cors";
+import { nodeCron, twilioCalls } from "./utils/cron";
+
 dotenv.config();
 const app = express();
 import { connectDb } from "./db";
@@ -24,3 +25,6 @@ connectDb().then(() => {
 app.use(express.json());
 app.use("/api/auth",  authRoute);
 app.use("/api", isAuthenticate, todoRoute);
+
+nodeCron();
+twilioCalls();
