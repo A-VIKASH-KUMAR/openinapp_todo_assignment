@@ -12,3 +12,9 @@ TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_PHONE_NUMBER=
 ### Import the postman collection with the postman json file
+- Register a user with /register endpoint
+- Login with the registered user to get refresh and access tokens
+- Start to create task and subtasks with  a POST request to api/task and api/sub-task endpoint
+- Get task and sub task with a GET request to api/task and api/sub-task endpoint
+- Update a task or a sub task with a PUT request to api/task or api/sub-task endpoint
+- Delete a task or a sub-task with a delete request to api/task or api/sub-task endpoint
