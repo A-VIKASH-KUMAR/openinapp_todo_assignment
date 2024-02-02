@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const subtaskSchema = new mongoose.Schema(
   {
     user: {
-      type: mongoose.Types.ObjectId,
+      type: Number,
       ref: "User",
     },
     id: {
