@@ -35,7 +35,6 @@ export const nodeCron = async () => {
       const tasksToUpdate = await Task.find({
         due_date: { $lte: currentDate },
       });
-      console.log("tasks", tasksToUpdate);
 
       if (tasksToUpdate.length === 0) {
         console.log("no tasks to update");
